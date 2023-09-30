@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &7185179556686743794
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2505167279245907537, guid: 9fc6411a2e1ddb342bc5e1894579e3ae,
+        type: 3}
+      propertyPath: m_Name
+      value: pepl with spear
+      objectReference: {fileID: 0}
+    - target: {fileID: 5143861003300547639, guid: 9fc6411a2e1ddb342bc5e1894579e3ae,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 93543f7435acebb45a8643246c76360d,
+        type: 3}
+    - target: {fileID: 5459712578278621278, guid: 9fc6411a2e1ddb342bc5e1894579e3ae,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5459712578278621278, guid: 9fc6411a2e1ddb342bc5e1894579e3ae,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5459712578278621278, guid: 9fc6411a2e1ddb342bc5e1894579e3ae,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5459712578278621278, guid: 9fc6411a2e1ddb342bc5e1894579e3ae,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5459712578278621278, guid: 9fc6411a2e1ddb342bc5e1894579e3ae,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5459712578278621278, guid: 9fc6411a2e1ddb342bc5e1894579e3ae,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5459712578278621278, guid: 9fc6411a2e1ddb342bc5e1894579e3ae,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 9fc6411a2e1ddb342bc5e1894579e3ae, type: 3}

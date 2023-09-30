@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a21d3e94b2323d438ac54ce9a4f437d, type: 3}
+  m_Name: PeplSpawner
+  m_EditorClassIdentifier: 
+  entity: {fileID: 1049072684874201850, guid: 59415122f7c047c4a9b37f7753b2f9e9, type: 3}
+  spawnPosition: {x: 8, y: 9}
