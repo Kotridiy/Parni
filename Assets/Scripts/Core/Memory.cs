@@ -8,8 +8,8 @@ namespace Assets.Scripts.Core
 {
     public class Memory
     {
-        const float MAX_STORAGE_TIME = 10;
-        const float MAX_VISITS_COUNT = 5;
+        const float MAX_STORAGE_TIME = 100;
+        const float MAX_VISITS_COUNT = 50;
 
         private Team ownerTeam;
         private int memoryVolume;
@@ -121,8 +121,8 @@ namespace Assets.Scripts.Core
 
         private float CalculateImportance(MemoryInfo memory)
         {
-            float timeMultiplier = math.sqrt(1 - math.min(Time.time - memory.LastUpdate, MAX_STORAGE_TIME) / MAX_STORAGE_TIME);
-            float visitsMultiplier = math.sqrt(1 - math.min(memory.VisitCount, MAX_VISITS_COUNT) / MAX_VISITS_COUNT);
+            float timeMultiplier = math.sqrt(1 - math.min(Time.time - memory.LastUpdate, MAX_STORAGE_TIME - 1) / MAX_STORAGE_TIME);
+            float visitsMultiplier = math.sqrt(math.min(memory.VisitCount, MAX_VISITS_COUNT) / MAX_VISITS_COUNT);
             float placeValue = memory.Entities.Length == 0 ? 0 : 
                 memory.Entities.Max(e => !e.Team.IsEnemy(ownerTeam) && e is GamePlace place ? place.GetImportance() : 0);
             return timeMultiplier * visitsMultiplier * (1 + memory.DangerLevel + placeValue);
