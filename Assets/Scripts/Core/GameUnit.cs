@@ -130,7 +130,7 @@ namespace Assets.Scripts.Core
 
         public ScanInfo[] Scan(bool ignoreTime = false)
         {
-            if (ignoreTime &&
+            if (!ignoreTime &&
                 lastScanInfos != null &&
                 Time.realtimeSinceStartup - lastScanTime < ScanInterval)
             {
@@ -139,19 +139,15 @@ namespace Assets.Scripts.Core
 
             lastScanTime = Time.realtimeSinceStartup;
 
-            var scanEntities = HexGraph.Graph.ScanPoint(Point, VisualRange).ToList();
-            for (int i = 0; i < scanEntities.Count; i++)
+            var scanInfos = HexGraph.Graph.ScanPoint(Point, VisualRange).ToList();
+            foreach (var info in scanInfos)
             {
-                if (scanEntities[i].Point == Point)
+                if (Point.Equals(info.Point))
                 {
-                    scanEntities[i] = new ScanInfo 
-                    { 
-                        Point = scanEntities[i].Point, 
-                        Entities = scanEntities[i].Entities.Where(e => e != this) 
-                    };
+                    info.Entities = info.Entities.Where(e => e != this);
                 }
             }
-            lastScanInfos = scanEntities.ToArray();
+            lastScanInfos = scanInfos.ToArray();
             Memory.LoadInfo(lastScanInfos);
 
             return lastScanInfos;
@@ -172,7 +168,9 @@ namespace Assets.Scripts.Core
                 strb.AppendLine(Name);
                 //strb.AppendLine(Description);
                 //strb.AppendLine($"Позиция - {Point}");
-                var visibleObjects = Scan().Aggregate(new List<GameEntity>(), (entities, info) => {entities.AddRange(info.Entities); return entities;});
+                strb.AppendLine($"Команда - {Team}");
+                if (lastScanInfos == null) Scan();
+                var visibleObjects = lastScanInfos.Aggregate(new List<GameEntity>(), (entities, info) => {entities.AddRange(info.Entities); return entities;});
                 strb.AppendLine($"Видно объектов - {visibleObjects.Count}");
                 foreach ( var obj in visibleObjects)
                 {

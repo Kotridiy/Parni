@@ -1,6 +1,5 @@
 ﻿using Assets.Scripts.Core;
 using System;
-using System.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -14,7 +13,7 @@ namespace Assets.Scripts
 
         private void Start()
         {
-            if (Application.isPlaying && (memoryPrefab == null || memoryPrefab.GetComponent<SpriteRenderer>() == null))
+            if (Application.isPlaying && (memoryPrefab == null || memoryPrefab.GetComponentInChildren<SpriteRenderer>() == null))
                 throw new Exception($"{typeof(MemoryDrawer)} has no actual memory prefab!");
         }
 
@@ -28,11 +27,12 @@ namespace Assets.Scripts
             if (memory != null) memory.MemoryChanged -= OnDrawMemory;
         }
 
-        public void DrawMemory(Memory memory)
+        public void StartDraw(Memory memory)
         {
-            if (memory != null) memory.MemoryChanged -= OnDrawMemory;
+            if (this.memory != null) this.memory.MemoryChanged -= OnDrawMemory;
 
             this.memory = memory;
+            memory.MemoryChanged += OnDrawMemory;
             OnDrawMemory(memory, EventArgs.Empty);
         }
 
@@ -47,20 +47,25 @@ namespace Assets.Scripts
 
         private void OnDrawMemory(object sender, EventArgs e)
         {
-            if (memory != sender) throw new Exception($"{typeof(MemoryDrawer)} has old memory!");
+            if (memory != sender) 
+                throw new Exception($"{typeof(MemoryDrawer)} has old memory!");
             if (!Application.isPlaying) return;
             Clear();
+            Draw();
+        }
 
+        private void Draw()
+        {
             foreach (var memoryInfo in memory.Memories)
             {
                 var pointObj = Instantiate(memoryPrefab, transform);
 
-                pointObj.transform.position = new Vector3(memoryInfo.Point.PosX, memoryInfo.Point.PosY);
+                pointObj.transform.position = new Vector3(memoryInfo.Point.PosX, memoryInfo.Point.PosY, pointObj.transform.position.z);
 
-                float size = math.min(memoryInfo.VisitCount, 10) / 10;
+                float size = (1 + math.min(memoryInfo.ImportanceLevel, 4)) / 5f;
                 pointObj.transform.localScale = new Vector3(size, size, 1);
 
-                var renderer = pointObj.GetComponent<SpriteRenderer>();
+                var renderer = pointObj.GetComponentInChildren<SpriteRenderer>();
                 var safe = 1 - math.min(memoryInfo.DangerLevel, 5) / 5;
                 renderer.color = new Color(1, safe, safe);
 

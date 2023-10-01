@@ -76,13 +76,13 @@ namespace Assets.Scripts
             {
                 SystemInfoText.ChangeInfoText(point.GamePlace.Info);
                 captured = point.GamePlace;
-                memoryDrawer.DrawMemory(point.GamePlace.Memory);
+                memoryDrawer.StartDraw(point.GamePlace.Memory);
             }
             else if (unit != null)
             {
                 SystemInfoText.ChangeInfoText(unit.Info);
                 captured = unit;
-                memoryDrawer.DrawMemory(unit.Memory);
+                memoryDrawer.StartDraw(unit.Memory);
             }
             else 
             { 

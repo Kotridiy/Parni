@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace Assets.Scripts.Core
 {
     public class Memory
     {
-        const float MAX_STORAGE_TIME = 100;
-        const float MAX_VISITS_COUNT = 100;
+        const float MAX_STORAGE_TIME = 10;
+        const float MAX_VISITS_COUNT = 5;
 
         private Team ownerTeam;
         private int memoryVolume;
@@ -86,19 +85,17 @@ namespace Assets.Scripts.Core
             Memories.ForEach(memory => memory.DangerLevel = calculateFunc(memory));
 
             // Вторая итерация
-            var memoriesCopy = new List<MemoryInfo>(Memories.Count);
-            for (var i = 0; i < Memories.Count; i++)
+            var memoriesCopy = Memories.Select(m => new MemoryInfo(m)).ToList();
+            for (var i = 0; i < Memories.Count - 1; i++)
             {
-                var memory = Memories[i];
-                for (var j = 0; j < Memories.Count; j++)
+                for (var j = i; j < Memories.Count; j++)
                 {
-                    if (i == j) continue;
                     var pointA = Memories[i].Point;
                     var pointB = Memories[j].Point;
                     if (HexGraph.Graph.GetGraphEdge(pointA.X, pointA.Y, pointB.X, pointB.Y) == null) continue;
-                    memory.DangerLevel += Memories[j].DangerLevel;
+                    memoriesCopy[i].DangerLevel += Memories[j].DangerLevel;
+                    memoriesCopy[j].DangerLevel += Memories[i].DangerLevel;
                 }
-                memoriesCopy.Add(memory);
             }
             Memories = memoriesCopy;
         }
@@ -113,17 +110,7 @@ namespace Assets.Scripts.Core
         {
             while (Memories.Count > memoryVolume)
             {
-                var minIndex = 0;
-                var minImportance = Memories[0].ImportanceLevel;
-                for (var i = 1; i < Memories.Count; i++)
-                {
-                    if (Memories[i].ImportanceLevel < minImportance)
-                    {
-                        minIndex = i;
-                        minImportance = Memories[i].ImportanceLevel;
-                    }
-                }
-                Memories.RemoveAt(minIndex);
+                Memories.Remove(Memories.Aggregate((min, memory) => memory.ImportanceLevel < min.ImportanceLevel ? memory : min));
             }
         }
 
@@ -136,12 +123,13 @@ namespace Assets.Scripts.Core
         {
             float timeMultiplier = math.sqrt(1 - math.min(Time.time - memory.LastUpdate, MAX_STORAGE_TIME) / MAX_STORAGE_TIME);
             float visitsMultiplier = math.sqrt(1 - math.min(memory.VisitCount, MAX_VISITS_COUNT) / MAX_VISITS_COUNT);
-            float placeValue = memory.Entities.Max(e => !e.Team.IsEnemy(ownerTeam) && e is GameUnit unit ? unit.Power : 0);
+            float placeValue = memory.Entities.Length == 0 ? 0 : 
+                memory.Entities.Max(e => !e.Team.IsEnemy(ownerTeam) && e is GamePlace place ? place.GetImportance() : 0);
             return timeMultiplier * visitsMultiplier * (1 + memory.DangerLevel + placeValue);
         }
     }
 
-    public struct MemoryInfo
+    public class MemoryInfo
     {
         public GraphPointInfo Point { get; private set; }
         public GameEntity[] Entities { get; private set; }
@@ -151,8 +139,20 @@ namespace Assets.Scripts.Core
         public float DangerLevel { get; set; }
         public float ImportanceLevel { get; set; }
 
+        public MemoryInfo(MemoryInfo memory)
+        {
+            Point = memory.Point;
+            Entities = memory.Entities;
+            VisitCount = memory.VisitCount;
+            LastUpdate = memory.LastUpdate;
+            DangerLevel = memory.DangerLevel;
+            ImportanceLevel = memory.ImportanceLevel;
+        }
+
         public MemoryInfo(ScanInfo info)
         {
+            if (info == null) throw new ArgumentNullException(nameof(info));
+
             Point = info.Point;
             Entities = info.Entities.ToArray();
             VisitCount = 1;
@@ -178,7 +178,6 @@ namespace Assets.Scripts.Core
                 throw new ArgumentException($"Wrong scan info! {info.Point} vs {Point}");
 
             Entities = info.Entities;
-            VisitCount++;
             LastUpdate = Time.time;
         }
     }

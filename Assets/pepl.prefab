@@ -94,3 +94,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bf71f28d44fb074cae638066932f92a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  VisualRange: 1
+  ScanInterval: 1
+  MemoryVolume: 10

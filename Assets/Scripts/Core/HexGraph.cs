@@ -41,13 +41,13 @@ namespace Assets.Scripts.Core
                     if ((i + j) % 2 == 0)
                     {
                         if (i < N - 1) edges[i, j, 0] = new GraphEdge(points[i, j], points[i + 1, j]);
-                        if (j > 0) edges[i, j, 1] = edges[i, j - 1, 0];
+                        if (j > 0) edges[i, j, 1] = edges[i, j - 1, 2];
                         if (j < M - 1) edges[i, j, 2] = new GraphEdge(points[i, j], points[i, j + 1]);
                     }
                     else
                     {
                         if (i > 0) edges[i, j, 0] = edges[i - 1, j, 0];
-                        if (j > 0) edges[i, j, 1] = edges[i, j - 1, 0];
+                        if (j > 0) edges[i, j, 1] = edges[i, j - 1, 2];
                         if (j < M - 1) edges[i, j, 2] = new GraphEdge(points[i, j], points[i, j + 1]);
                     }
                 }
@@ -231,12 +231,9 @@ namespace Assets.Scripts.Core
             var visitedPoints = new List<GraphPoint>();
             List<ScanInfo> infos = new List<ScanInfo>(ScanRecursion(point, ref visitedPoints, visualRange));
 
-            for (var i = 0; i < infos.Count; i++)
+            foreach (var info in infos)
             {
-                infos[i] = new ScanInfo
-                {
-                    Point = infos[i].Point,
-                    Entities = infos[i].Entities.Where(e =>
+                info.Entities = info.Entities.Where(e =>
                     {
                         if (e is GamePlace) return true;
                         var unit = e as GameUnit;
@@ -244,8 +241,7 @@ namespace Assets.Scripts.Core
                         if (unit.OnRoad == null) return true;
                         return visitedPoints.Contains(unit.OnRoad.First)
                             && visitedPoints.Contains(unit.OnRoad.Second);
-                    })
-                };
+                    });
             }
             return infos.ToArray();
         }
@@ -255,18 +251,10 @@ namespace Assets.Scripts.Core
             List<ScanInfo> infos = new List<ScanInfo>();
 
             var entities = new List<GameEntity>();
+            entities.AddRange(point.GetUnits());
             if (point.GamePlace != null) entities.Add(point.GamePlace);
-            foreach (var unit in point.GetUnits())
-            {
-                entities.Add(unit);
-            };
-            ScanInfo info = new ScanInfo()
-            {
-                Point = point.GetInfo(),
-                Entities = entities
-            };
 
-            infos.Add(info);
+            infos.Add(new ScanInfo(point.GetInfo(), entities));
             visitedPoints.Add(point);
 
             if (visualRange > 0)
@@ -396,42 +384,13 @@ namespace Assets.Scripts.Core
             return new GraphPointInfo(X, Y, PosX, PosY);
         }
 
-        public static bool operator ==(GraphPoint a, GraphPointInfo b)
-        {
-            return a.X == b.X && a.Y == b.Y;
-        }
-
-        public static bool operator !=(GraphPoint a, GraphPointInfo b)
-        {
-            return a.X != b.X || a.Y != b.Y;
-        }
-
-        public static bool operator ==(GraphPointInfo a, GraphPoint b)
-        {
-            return a.X == b.X && a.Y == b.Y;
-        }
-
-        public static bool operator !=(GraphPointInfo a, GraphPoint b)
-        {
-            return a.X != b.X || a.Y != b.Y;
-        }
-
-        public static bool operator ==(GraphPoint a, GraphPoint b)
-        {
-            return a.X == b.X && a.Y == b.Y;
-        }
-
-        public static bool operator !=(GraphPoint a, GraphPoint b)
-        {
-            return a.X != b.X || a.Y != b.Y;
-        }
-
         public override bool Equals(object obj)
         {
-            return (obj is GraphPointInfo pointInfo &&
-                   X == pointInfo.X && Y == pointInfo.Y) ||
-                   (obj is GraphPoint point &&
-                   X == point.X && Y == point.Y);
+            return (this is null && obj is null) ||
+                   !(this is null) && (
+                        (obj is GraphPointInfo pointInfo && X == pointInfo.X && Y == pointInfo.Y) ||
+                        (obj is GraphPoint point && X == point.X && Y == point.Y)
+                   );
         }
 
         public override int GetHashCode()

@@ -31,7 +31,8 @@ namespace Assets.Scripts.Core
                 var strb = new StringBuilder();
                 strb.AppendLine(Name);
                 strb.AppendLine(Description);
-                strb.AppendLine($"Позиция - [{Point.X}, {Point.Y}]");
+                strb.AppendLine($"Позиция - {Point}");
+                strb.AppendLine($"Команда - {Team}");
                 return strb.ToString();
             }
         }

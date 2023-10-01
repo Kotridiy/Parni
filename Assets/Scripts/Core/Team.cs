@@ -31,31 +31,21 @@ namespace Assets.Scripts.Core
             enemies.Add(team);
         }
 
-        //public static bool operator ==(Team a, Team b)
-        //{
-        //    return string.Equals(a.Name, b.Name);
-        //}
+        public override bool Equals(object obj)
+        {
+            return obj is Team team &&
+                   string.Equals(Name, team.Name);
+        }
 
-        //public static bool operator !=(Team a, Team b)
-        //{
-        //    return !string.Equals(a.Name, b.Name);
-        //}
+        public override int GetHashCode()
+        {
+            return 539060726 + EqualityComparer<string>.Default.GetHashCode(Name);
+        }
 
-        //public override string ToString()
-        //{
-        //    return Name + " team";
-        //}
-
-        //public override bool Equals(object obj)
-        //{
-        //    return obj is Team team &&
-        //           Name == team.Name;
-        //}
-
-        //public override int GetHashCode()
-        //{
-        //    return 539060726 + EqualityComparer<string>.Default.GetHashCode(Name);
-        //}
+        public override string ToString()
+        {
+            return Name + " team";
+        }
     }
 
     public enum Race

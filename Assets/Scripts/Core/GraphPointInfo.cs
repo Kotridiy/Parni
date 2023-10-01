@@ -1,8 +1,6 @@
-﻿using System.Drawing;
-
-namespace Assets.Scripts.Core
+﻿namespace Assets.Scripts.Core
 {
-    public struct GraphPointInfo
+    public class GraphPointInfo
     {
         public int X { get; private set; }
         public int Y { get; private set; }
@@ -19,12 +17,12 @@ namespace Assets.Scripts.Core
 
         public static bool operator ==(GraphPointInfo a, GraphPointInfo b)
         {
-            return a.X == b.X && a.Y == b.Y;
+            return ReferenceEquals(a, b) || !(a is null) && !(b is null) && (a.X == b.X && a.Y == b.Y);
         }
 
         public static bool operator !=(GraphPointInfo a, GraphPointInfo b)
         {
-            return a.X != b.X || a.Y != b.Y;
+            return !(ReferenceEquals(a, b) || !(a is null) && !(b is null) && (a.X == b.X && a.Y == b.Y));
         }
 
         public override bool Equals(object obj)
