@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Assets.Scripts.Core;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.Scripts.Core
+namespace Assets.Scripts
 {
     public class TeamManager
     {

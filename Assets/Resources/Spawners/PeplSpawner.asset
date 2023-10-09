@@ -9,8 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a21d3e94b2323d438ac54ce9a4f437d, type: 3}
+  m_Script: {fileID: 11500000, guid: 25d949770343f2147b7cb6d1171fec23, type: 3}
   m_Name: PeplSpawner
   m_EditorClassIdentifier: 
-  entity: {fileID: 1049072684874201850, guid: 59415122f7c047c4a9b37f7753b2f9e9, type: 3}
-  spawnPosition: {x: 8, y: 9}
+  active: 1
+  entity: {fileID: 7870582066726547976, guid: 9fc6411a2e1ddb342bc5e1894579e3ae, type: 3}
+  spawnPosition: {x: 9, y: 12}

@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿using Assets.Scripts.Core.BehaviorCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,19 +7,20 @@ using UnityEngine;
 
 namespace Assets.Scripts.Core
 {
-    [RequireComponent(typeof(SpriteRenderer))]
     public abstract class GameUnit : GameEntity
     {
         [SerializeField] protected int VisualRange = 1;
         [SerializeField] protected float ScanInterval = 1;
         [SerializeField] protected int MemoryVolume = 10;
 
-        public GraphEdge OnRoad { get; private set; }
-        public virtual float Power { get; }
+        [SerializeField] public SpriteRenderer SpriteRenderer { get; private set; }
 
-        private GraphPoint movingTarget;
-        private MovingState movingState;
-        private Coroutine changeMoveCoroutine;
+        public GraphEdge OnRoad
+        {
+            get; private set;
+        }
+        public Brain Brain { get; protected set; }
+        public virtual float Power { get; }
 
         public override void Initialization(GraphPoint point, Team team)
         {
@@ -29,100 +30,37 @@ namespace Assets.Scripts.Core
 
             Team = team;
             Memory = new Memory(team, MemoryVolume);
+            Brain = new Brain(new List<Behavior>(), this);
         }
 
-        #region Moving
-        public void Move(GraphPoint point)
+        public override void BecameAttacked(GameEntity attacker, float damage)
         {
-            if (changeMoveCoroutine != null) StopCoroutine(changeMoveCoroutine);
+            Health -= damage;
+            if (Health <= 0)
+            {
+                Health = 0;
+                Destroy(gameObject);
+            }
+            Brain.BecameAttacked(attacker);
 
-            changeMoveCoroutine = StartCoroutine(BeforeMoving(point));
         }
 
-        private IEnumerator BeforeMoving(GraphPoint point)
+        public void StartMoveOnRoad(GraphEdge road)
         {
-            if (movingTarget != null && point != movingTarget)
-            {
-                movingState = MovingState.ChangeTarget;
-                yield return new WaitWhile(() => movingState != MovingState.Stand);
-            }
-            if (movingState == MovingState.Stand && point != Point)
-            {
-                StartCoroutine(MovingToDestination(point));
-                movingTarget = point;
-                movingState = MovingState.Moving;
-            }
+            if (OnRoad != null) throw new Exception($"{Name} on road {OnRoad} now!");
+
+            if (road.First != Point && road.Second != Point) throw new Exception($"Road {road} don't have point {Point}");
+
+            OnRoad = road;
         }
 
-        private IEnumerator MovingToDestination(GraphPoint destination)
+        public void EndMoveRoad()
         {
-            var way = HexGraph.Graph.FindShortestWay(GetRoadSpeed, Point, destination);
-            if (way != null)
-            {
-                foreach (var point in way)
-                {
-                    if (movingState == MovingState.ChangeTarget) break;
-                    if (point == Point) continue;
-                    yield return MovingToNextPoint(point);
-                }
-            }
-            movingTarget = null;
-            movingState = MovingState.Stand;
-        }
-
-        private IEnumerator MovingToNextPoint(GraphPoint point)
-        {
-            if (OnRoad != null)
-            {
-                throw new InvalidOperationException($"{Name} are moving on road {OnRoad} while trying reach {point} from {Point}");
-            }
-
-            OnRoad = HexGraph.Graph.GetGraphEdge(Point, point);
-            float movingTime = GetRoadSpeed(OnRoad.Level);
-            float timeLeft = 0;
-            var startPosition = transform.position;
-            var destinationPosition = new Vector3(point.PosX, point.PosY, transform.position.z);
-
-            while (timeLeft < movingTime)
-            {
-                transform.position = Vector3.Lerp(startPosition, destinationPosition, timeLeft / movingTime);
-                timeLeft += Time.deltaTime;
-                yield return null;
-            }
-
             Point.RemoveUnit(this);
-            point.AddUnit(this);
-            Point = point;
-            transform.position = destinationPosition;
+            Point = OnRoad.Second == Point ? OnRoad.First : OnRoad.Second;
+            Point.AddUnit(this);
             OnRoad = null;
-            Scan(true);
         }
-
-        private float GetRoadSpeed(EdgeLevel roadLevel)
-        {
-            switch (roadLevel)
-            {
-                case EdgeLevel.Foorpath:
-                    return 0.8f;
-                case EdgeLevel.Walkway:
-                    return 0.6f;
-                case EdgeLevel.Road:
-                case EdgeLevel.Highway:
-                    return 0.5f;
-                case EdgeLevel.None:
-                default:
-                    return 2;
-            }
-        }
-
-        enum MovingState
-        {
-            Stand,
-            Moving,
-            Wait,
-            ChangeTarget
-        }
-        #endregion
 
         #region Scanning
         private ScanInfo[] lastScanInfos = null;
@@ -157,7 +95,7 @@ namespace Assets.Scripts.Core
         public virtual void Start()
         {
             if (Point == null) throw new System.Exception($"{Name} не привязан к графу.");
-            movingState = MovingState.Stand;
+            StartCoroutine(Brain.StartThink());
         }
 
         public override string Info
@@ -167,12 +105,12 @@ namespace Assets.Scripts.Core
                 var strb = new StringBuilder();
                 strb.AppendLine(Name);
                 //strb.AppendLine(Description);
-                //strb.AppendLine($"Позиция - {Point}");
                 strb.AppendLine($"Команда - {Team}");
+                strb.AppendLine(Brain.ActiveBehavior.ActionName);
                 if (lastScanInfos == null) Scan();
-                var visibleObjects = lastScanInfos.Aggregate(new List<GameEntity>(), (entities, info) => {entities.AddRange(info.Entities); return entities;});
+                var visibleObjects = lastScanInfos.Aggregate(new List<GameEntity>(), (entities, info) => { entities.AddRange(info.Entities); return entities; });
                 strb.AppendLine($"Видно объектов - {visibleObjects.Count}");
-                foreach ( var obj in visibleObjects)
+                foreach (var obj in visibleObjects)
                 {
                     strb.AppendLine($"--{obj.Name}, {obj.Point}--");
                 }

@@ -3,7 +3,7 @@ using System;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.Debug
 {
     public class MemoryDrawer : MonoBehaviour
     {
@@ -29,6 +29,7 @@ namespace Assets.Scripts
 
         public void StartDraw(Memory memory)
         {
+            if (!enabled) return;
             if (this.memory != null) this.memory.MemoryChanged -= OnDrawMemory;
 
             this.memory = memory;

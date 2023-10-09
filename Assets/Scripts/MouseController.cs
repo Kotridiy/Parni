@@ -1,4 +1,6 @@
 ﻿using Assets.Scripts.Core;
+using Assets.Scripts.Core.BehaviorCore;
+using Assets.Scripts.Debug;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -45,6 +47,9 @@ namespace Assets.Scripts
             if (captured != null)
             {
                 SystemInfoText.ChangeInfoText(captured.Info);
+            } else
+            {
+                SystemInfoText.ChangeInfoText("");
             }
         }
 
@@ -120,7 +125,12 @@ namespace Assets.Scripts
 
         private void MoveUnit()
         {
-            (captured as GameUnit).Move(GetClosestGraphPoint());
+            var ans = (captured as GameUnit).Brain.TrySayCommand(new BrainTask(BrainTaskType.Movement, GetClosestGraphPoint()),
+                (o, e) => UnityEngine.Debug.Log("End command"));
+            if (!ans)
+            {
+                UnityEngine.Debug.Log("Command failed");
+            }
         }
 
         private GraphPoint GetClosestGraphPoint()

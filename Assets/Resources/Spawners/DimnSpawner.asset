@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a21d3e94b2323d438ac54ce9a4f437d, type: 3}
+  m_Script: {fileID: 11500000, guid: 25d949770343f2147b7cb6d1171fec23, type: 3}
   m_Name: DimnSpawner
   m_EditorClassIdentifier: 
   active: 1
   entity: {fileID: 4499512271244372305, guid: 554be13caf62cea46a53d7738f113469, type: 3}
-  spawnPosition: {x: 13, y: 6}
+  spawnPosition: {x: 13, y: 15}

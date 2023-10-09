@@ -17,6 +17,18 @@ namespace Assets.Scripts.Core
 
             Team = team;
             Memory = new Memory(team, 100); // TODO
+            MaxHealth = MaxHealth > 0 ? MaxHealth : 100;
+            Health = MaxHealth;
+        }
+
+        public override void BecameAttacked(GameEntity attacker, float damage)
+        {
+            Health -= damage;
+            if (Health <= 0)
+            {
+                Health = 0;
+                Destroy(gameObject);
+            }
         }
 
         public virtual void Start()

@@ -15,6 +15,8 @@ namespace Assets.Scripts.Entity
             base.Initialization(point, team);
 
             if (Team.Race != Race.Pepl) throw new System.Exception($"{typeof(Pepl).Name} can't be {Team.Race}!");
+
+            Brain = BrainBuilder.Scout(this);
         }
     }
 }

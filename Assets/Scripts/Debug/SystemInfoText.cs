@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.Debug
 {
     [RequireComponent(typeof(Text))]
     public class SystemInfoText : MonoBehaviour
