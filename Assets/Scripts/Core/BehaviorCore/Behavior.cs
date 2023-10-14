@@ -14,5 +14,8 @@ namespace Assets.Scripts.Core.BehaviorCore
 
         public abstract bool CanRunTask(BrainTask task);
         public abstract IEnumerator RunTask(BrainTask task);
+
+        protected IEnumerator CreateTask(BrainTask task) => Unit.Brain.CreateTask(task);
+        protected IEnumerator CreateTask(BrainTaskType type, object body) => Unit.Brain.CreateTask(new BrainTask(type, body, this));
     }
 }

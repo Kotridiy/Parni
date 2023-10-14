@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.Core.BehaviorCore;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,9 @@ namespace Assets.Scripts.Core
         [SerializeField] protected float ScanInterval = 1;
         [SerializeField] protected int MemoryVolume = 10;
 
-        [SerializeField] public SpriteRenderer SpriteRenderer { get; private set; }
+        [SerializeField] protected UnitSpriteController spriteController;
+
+        public UnitSpriteController SpriteController { get => spriteController; }
 
         public GraphEdge OnRoad
         {
@@ -31,6 +34,8 @@ namespace Assets.Scripts.Core
             Team = team;
             Memory = new Memory(team, MemoryVolume);
             Brain = new Brain(new List<Behavior>(), this);
+            MaxHealth = MaxHealth > 0 ? MaxHealth : 10;
+            Health = MaxHealth;
         }
 
         public override void BecameAttacked(GameEntity attacker, float damage)
@@ -38,11 +43,19 @@ namespace Assets.Scripts.Core
             Health -= damage;
             if (Health <= 0)
             {
-                Health = 0;
-                Destroy(gameObject);
+                StartCoroutine(Die());
+                return;
             }
             Brain.BecameAttacked(attacker);
 
+        }
+
+        private IEnumerator Die()
+        {
+            yield return new WaitForEndOfFrame();
+            Health = 0;
+            Destroy(gameObject);
+            Point.RemoveUnit(this);
         }
 
         public void StartMoveOnRoad(GraphEdge road)
@@ -106,14 +119,13 @@ namespace Assets.Scripts.Core
                 strb.AppendLine(Name);
                 //strb.AppendLine(Description);
                 strb.AppendLine($"Команда - {Team}");
+                strb.AppendLine($"Сила = {Power}");
+                strb.AppendLine($"{Health}/{MaxHealth} ХП");
                 strb.AppendLine(Brain.ActiveBehavior.ActionName);
                 if (lastScanInfos == null) Scan();
                 var visibleObjects = lastScanInfos.Aggregate(new List<GameEntity>(), (entities, info) => { entities.AddRange(info.Entities); return entities; });
                 strb.AppendLine($"Видно объектов - {visibleObjects.Count}");
-                foreach (var obj in visibleObjects)
-                {
-                    strb.AppendLine($"--{obj.Name}, {obj.Point}--");
-                }
+                strb.AppendLine($"Помню объектов - {Memory.Memories.Count} из {Memory.MemoryVolume}");
                 return strb.ToString();
             }
         }

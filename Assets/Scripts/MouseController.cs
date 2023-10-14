@@ -1,6 +1,9 @@
 ﻿using Assets.Scripts.Core;
 using Assets.Scripts.Core.BehaviorCore;
 using Assets.Scripts.Debug;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -18,6 +21,8 @@ namespace Assets.Scripts
         private GameObject border;
 
         private MemoryDrawer memoryDrawer;
+
+        private static Vector2 MousePos { get => Camera.main.ScreenToWorldPoint(Input.mousePosition); }
 
         private void OnEnable()
         {
@@ -76,18 +81,12 @@ namespace Assets.Scripts
 
         private void Capture(GraphPoint point)
         {
-            GameUnit unit = point.GetUnit();
-            if (point.GamePlace != null)
+            GameEntity entity = GetNextCaptureEntity(point);
+            if (entity != null)
             {
-                SystemInfoText.ChangeInfoText(point.GamePlace.Info);
-                captured = point.GamePlace;
-                memoryDrawer.StartDraw(point.GamePlace.Memory);
-            }
-            else if (unit != null)
-            {
-                SystemInfoText.ChangeInfoText(unit.Info);
-                captured = unit;
-                memoryDrawer.StartDraw(unit.Memory);
+                SystemInfoText.ChangeInfoText(entity.Info);
+                captured = entity;
+                memoryDrawer.StartDraw(entity.Memory);
             }
             else 
             { 
@@ -101,8 +100,8 @@ namespace Assets.Scripts
                 {
                     border = Instantiate(BorderPrefab);
                 }
-                border.transform.SetParent(captured.transform);
-                border.transform.position = new Vector3(captured.transform.position.x, captured.transform.position.y, captured.transform.position.z - 1);
+                border.transform.SetParent(captured is GameUnit unit ? unit.SpriteController.transform : captured.transform);
+                border.transform.position = new Vector3(border.transform.parent.position.x, border.transform.parent.position.y, border.transform.parent.position.z - 1);
             }
             else
             {
@@ -125,7 +124,7 @@ namespace Assets.Scripts
 
         private void MoveUnit()
         {
-            var ans = (captured as GameUnit).Brain.TrySayCommand(new BrainTask(BrainTaskType.Movement, GetClosestGraphPoint()),
+            var ans = (captured as GameUnit).Brain.TrySayCommand(new BrainTask(BrainTaskType.Movement, GetClosestGraphPoint(), null),
                 (o, e) => UnityEngine.Debug.Log("End command"));
             if (!ans)
             {
@@ -135,8 +134,65 @@ namespace Assets.Scripts
 
         private GraphPoint GetClosestGraphPoint()
         {
-            var mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            var mousePos = MousePos;
             return HexGraph.Graph.FindClosestPoint(mousePos.x, mousePos.y);
+        }
+
+        private GameUnit GetClosestUnit(IEnumerable<GameUnit> units)
+        {
+            if (units == null || !units.Any()) return null;
+            var mousePos = MousePos;
+            return units.Aggregate((closest, next) =>
+                Vector2.Distance(mousePos, closest.Point.Pos) < Vector2.Distance(mousePos, next.Point.Pos) ? closest : next);
+        }
+
+        // 1. Ближайший к курсору
+        // 2. Если здание было выбрано, то первый юнит
+        // 3. Если юнит был выбран, то следующий юнит
+        // 4. Если выбранный юнит - последний, то снова здание
+        // 5. Если в прошлом условии здания нет, то снова первый юнит
+        // 6. Если ничего не выбрано, то здание
+        // 7. Если ничего не выбрано и здания нет, то первый юнит
+        // 8. Если прошлый выбор повторяется с единственным зданием или единственным юнитом, то ничего
+        // 9. Если в точке ничего нет, то ничего 
+        private GameEntity GetNextCaptureEntity(GraphPoint point)
+        {
+            GameEntity entity = null;
+            if (point.GamePlace == null && !point.GetUnits().Any()) return null;
+
+            var mousePos = MousePos;
+            var unitsOnRoad = point.GetUnits().Where(u => u.OnRoad != null);
+            entity = GetClosestUnit(unitsOnRoad);
+            if (entity != null && (!point.GetUnits().Where(u => u.OnRoad == null).Any() || 
+                Vector2.Distance(mousePos, (Vector2)entity.transform.position) < Vector2.Distance(mousePos, point.Pos)))
+            {
+                return captured != entity ? entity : null;
+            }
+
+            if (captured != null)
+            {
+                if (captured is GamePlace)
+                {
+                    return captured != point.GamePlace ? (GameEntity)point.GamePlace : (point.GetUnits().Any() ? point.GetUnits().First() : null);
+                }
+                else
+                {
+                    var unitsOnPoint = point.GetUnits().Where(u => u.OnRoad == null).ToList() ?? new List<GameUnit>();
+                    var index = unitsOnPoint.IndexOf(captured as GameUnit);
+                    if (index == unitsOnPoint.Count - 1)
+                    {
+                        return point.GamePlace != null ? (GameEntity)point.GamePlace : (unitsOnPoint.Count == 1 ? null : unitsOnPoint.First());
+                    }
+                    else
+                    {
+                        return unitsOnPoint[index + 1];
+                    }
+                }
+            }
+            else
+            {
+                return point.GamePlace != null ? (GameEntity)point.GamePlace : point.GetUnits().Where(u => u.OnRoad == null).First();
+            }
         }
     }
 }

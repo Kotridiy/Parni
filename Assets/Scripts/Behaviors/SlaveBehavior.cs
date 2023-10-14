@@ -5,6 +5,10 @@ using UnityEngine;
 
 namespace Assets.Scripts.Behaviors
 {
+    /// <summary>
+    /// Основное поведение
+    /// Ничего не делает, пока не прикажут
+    /// </summary>
     public class SlaveBehavior : Behavior
     {
         public SlaveBehavior(GameUnit unit) : base(unit)
@@ -21,7 +25,7 @@ namespace Assets.Scripts.Behaviors
         public override IEnumerator RunTask(BrainTask task)
         {
             UnityEngine.Debug.Log($"{Unit.Name} готов вкалывать.");
-            while (true)
+            while (Unit != null)
             {
                 if (Unit.Brain.Status != BrainStatus.Normal)
                 {
@@ -29,7 +33,7 @@ namespace Assets.Scripts.Behaviors
                 } 
                 else
                 {
-                    yield return new WaitForSeconds(1);
+                    yield return new WaitForSeconds(0.2f);
                 }
             }
         }

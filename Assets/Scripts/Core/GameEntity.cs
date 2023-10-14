@@ -15,7 +15,8 @@ namespace Assets.Scripts.Core
         public Team Team { get; protected set; }
         public Memory Memory { get; protected set; }
 
-        [SerializeField] public float MaxHealth { get; protected set; }
+        [SerializeField] private float maxHealth;
+        public float MaxHealth { get => maxHealth; protected set => maxHealth = value; }
         public float Health { get; protected set; }
 
         public bool IsEnemy(GameEntity entity)

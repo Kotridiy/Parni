@@ -34,6 +34,7 @@ namespace Assets.Scripts.Core
         public virtual void Start()
         {
             if (Point == null) throw new System.Exception($"{Name} не привязан к графу.");
+            transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z + 1);
         }
 
         public override string Info

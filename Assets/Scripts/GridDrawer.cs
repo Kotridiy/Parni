@@ -1,7 +1,5 @@
 ﻿using Assets.Scripts.Core;
-using Assets.Scripts.Debug;
 using Assets.Scripts.Entity;
-using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -30,6 +28,7 @@ namespace Assets.Scripts
         private Vector3 prefabScale;
 
         public HexGraph Graph { get => graph; }
+        public float CellSize { get => cellSize; }
 
         private void OnDrawGizmos()
         {
@@ -117,6 +116,7 @@ namespace Assets.Scripts
             GameObject road = Instantiate(roadPrefab, roadBase.transform);
             Vector3 direction = (endPos - startPos).normalized;
             road.transform.position = startPos + direction * cellSize * GraphPoint.R;
+            road.transform.localPosition = new Vector3(road.transform.localPosition.x, road.transform.localPosition.y, 0);
             road.transform.rotation = Quaternion.Euler(0, 0, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
             road.transform.localScale = prefabScale;
             road.GetComponent<SpriteRenderer>().sprite = sprite;

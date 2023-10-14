@@ -11,8 +11,10 @@ namespace Assets.Scripts.Behaviors
     /// Идёт к точке по кратчайшему маршруту
     /// </summary>
     public class MovementBehavior : Behavior
-    { 
-        private GraphPoint movingTarget;
+    {
+        private const float TIME_FACTOR = 1f;
+
+        protected GraphPoint movingTarget;
 
         public override string ActionName => movingTarget != null ? string.Format($"Идёт к {movingTarget}") : "Движение";
 
@@ -40,13 +42,14 @@ namespace Assets.Scripts.Behaviors
                         //if (movingState == MovingState.ChangeTarget) break;
                         if (point == Unit.Point) continue;
                         yield return MovingToNextPoint(point);
+                        Unit.Scan();
                     }
                 }
                 movingTarget = null;
             }
         }
 
-        private IEnumerator MovingToNextPoint(GraphPoint point)
+        protected IEnumerator MovingToNextPoint(GraphPoint point)
         {
             if (Unit.OnRoad != null)
             {
@@ -55,7 +58,7 @@ namespace Assets.Scripts.Behaviors
 
             Unit.StartMoveOnRoad(HexGraph.Graph.GetGraphEdge(Unit.Point, point));
 
-            float movingTime = GetRoadSpeed(Unit.OnRoad.Level);
+            float movingTime = GetRoadSpeed(Unit.OnRoad.Level) * TIME_FACTOR;
             float timeLeft = 0;
             var startPosition = Unit.transform.position;
             var destinationPosition = new Vector3(point.PosX, point.PosY, Unit.transform.position.z);
@@ -72,7 +75,7 @@ namespace Assets.Scripts.Behaviors
             Unit.Scan(true);
         }
 
-        private float GetRoadSpeed(EdgeLevel roadLevel)
+        protected float GetRoadSpeed(EdgeLevel roadLevel)
         {
             switch (roadLevel)
             {

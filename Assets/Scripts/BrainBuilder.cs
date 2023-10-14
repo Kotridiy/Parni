@@ -29,6 +29,21 @@ namespace Assets.Scripts
             return new Brain(brainBehaviors, unit);
         }
 
+        public static Brain Bully(GameUnit unit)
+        {
+            List<Behavior> brainBehaviors = new List<Behavior>
+            {
+                new BullyBehavior(unit),
+                new SearchBehavior(unit),
+                new AgressiveSeekBehavior(unit),
+                new StepMovementBehavior(unit),
+                new MovementBehavior(unit),
+                new AttackBehavior(unit),
+            };
+
+            return new Brain(brainBehaviors, unit);
+        }
+
         //...
     }
 }

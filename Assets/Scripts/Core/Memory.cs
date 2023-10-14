@@ -8,8 +8,8 @@ namespace Assets.Scripts.Core
 {
     public class Memory
     {
-        const float MAX_STORAGE_TIME = 100;
-        const float MAX_VISITS_COUNT = 50;
+        public const float MAX_STORAGE_TIME = 100;
+        public const float MAX_VISITS_COUNT = 50;
 
         private Team ownerTeam;
         private int memoryVolume;
@@ -38,6 +38,29 @@ namespace Assets.Scripts.Core
             Memories = new List<MemoryInfo>();
             this.calculateDangerFunc = calculateDangerFunc;
             this.calculateImportanceFunc = calculateImportanceFunc;
+        }
+
+        public bool IsRemember(GameEntity entity)
+        {
+            foreach (var memoryInfo in Memories)
+            {
+                if (memoryInfo.Entities.Any(e => e == entity)) return true;
+            }
+            return false;
+        }
+
+        public bool TryGetMemoryPosition(GameEntity entity, out GraphPointInfo position)
+        {
+            foreach (var memoryInfo in Memories)
+            {
+                if (memoryInfo.Entities.Any(e => e == entity))
+                {
+                    position = memoryInfo.Point;
+                    return true;
+                }
+            }
+            position = null;
+            return false;
         }
 
         public void LoadInfo(IEnumerable<ScanInfo> infos)

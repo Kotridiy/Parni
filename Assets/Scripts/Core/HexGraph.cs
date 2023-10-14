@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
+using static UnityEngine.UI.CanvasScaler;
 
 namespace Assets.Scripts.Core
 {
@@ -235,9 +237,9 @@ namespace Assets.Scripts.Core
             {
                 info.Entities = info.Entities.Where(e =>
                     {
+                        if (e == null) return false;
                         if (e is GamePlace) return true;
                         var unit = e as GameUnit;
-                        if (unit == null) return false;
                         if (unit.OnRoad == null) return true;
                         return visitedPoints.Contains(unit.OnRoad.First)
                             && visitedPoints.Contains(unit.OnRoad.Second);
@@ -268,6 +270,16 @@ namespace Assets.Scripts.Core
             }
 
             return infos;
+        }
+
+        public bool IsInRange(Vector2 pointA, Vector2 pointB, float edgesDistance = 0.5f)
+        {
+            float distance = edgesDistance * GraphPoint.R * CellSize * 2;
+            return Vector2.Distance(pointA, pointB) <= distance;
+        }
+        public bool IsNear(GameEntity entityA, GameEntity entityB)
+        {
+            return entityA.Point == entityB.Point && IsInRange(entityA.transform.position, entityB.transform.position, 0.1f);
         }
     }
 
@@ -303,6 +315,11 @@ namespace Assets.Scripts.Core
 
         private int exp;
 
+        public GraphPoint GetAnotherEnd(GraphPoint point)
+        {
+            return First == point ? Second : (Second == point ? First : null);
+        }
+
         public override string ToString()
         {
             return string.Format($"_road from {First} to {Second}_");
@@ -315,6 +332,7 @@ namespace Assets.Scripts.Core
         public int Y { get; private set; }
         public float PosX { get; private set; }
         public float PosY { get; private set; }
+        public Vector2 Pos { get => new Vector2 (PosX, PosY); }
 
         public static float R
         {
@@ -374,9 +392,9 @@ namespace Assets.Scripts.Core
             return (units != null) && (units.Count > index) ? units[index] : null;
         }
 
-        public GameUnit[] GetUnits()
+        public IEnumerable<GameUnit> GetUnits()
         {
-            return units?.ToArray() ?? Array.Empty<GameUnit>();
+            return units ?? new List<GameUnit>();
         }
 
         public GraphPointInfo GetInfo()

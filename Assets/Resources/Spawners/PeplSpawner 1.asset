@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 25d949770343f2147b7cb6d1171fec23, type: 3}
-  m_Name: DimnSpawner
+  m_Name: PeplSpawner 1
   m_EditorClassIdentifier: 
   active: 1
-  entity: {fileID: 2221781114459601909, guid: 554be13caf62cea46a53d7738f113469, type: 3}
-  spawnPosition: {x: 13, y: 15}
+  entity: {fileID: 7870582066726547976, guid: 9fc6411a2e1ddb342bc5e1894579e3ae, type: 3}
+  spawnPosition: {x: 9, y: 10}

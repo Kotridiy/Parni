@@ -6,6 +6,10 @@ using UnityEngine;
 
 namespace Assets.Scripts.Behaviors
 {
+    /// <summary>
+    /// Основное поведение
+    /// 5 раз рыскает вокруг и идёт домой
+    /// </summary>
     public class ScoutBehavior : Behavior
     {
         public ScoutBehavior(GameUnit unit) : base(unit)
@@ -23,22 +27,15 @@ namespace Assets.Scripts.Behaviors
         {
             UnityEngine.Debug.Log($"{Unit.Name} обыскивает местность.");
             int movements = 0;
-            while (true)
+            while (Unit != null)
             {
 
                 if (movements < 5)
                 {
                     yield return BehaviorHelper.CheckStatus(Unit);
-
-                    GraphPoint nextPoint;
-                    do
-                    {
-                        int x = Unit.Point.X + Random.Range(-4, 5);
-                        int y = Unit.Point.Y + Random.Range(-4, 5);
-                        nextPoint = HexGraph.Graph.GetGraphPoint(x, y);
-                    } while (nextPoint == null);
+                    GraphPoint nextPoint = BehaviorHelper.GetRandomPoint(Unit, 4);
                     // 1. Пойти в случайное место
-                    yield return Unit.Brain.CreateTask(new BrainTask(BrainTaskType.Movement, nextPoint));
+                    yield return CreateTask(BrainTaskType.Movement, nextPoint);
 
                     yield return BehaviorHelper.CheckStatus(Unit);
 
@@ -53,8 +50,8 @@ namespace Assets.Scripts.Behaviors
                     if (!Unit.Memory.Memories.Any(info => info.Entities.Any(e => e is GamePlace)))
                     {
                         // Но сперва попытатся найти его
-                        nextTask = new BrainTask(BrainTaskType.Search, typeof(GamePlace));
-                        yield return Unit.Brain.CreateTask(nextTask);
+                        nextTask = new BrainTask(BrainTaskType.Search, typeof(GamePlace), this);
+                        yield return CreateTask(nextTask);
 
                         yield return BehaviorHelper.CheckStatus(Unit);
                     }
@@ -63,8 +60,8 @@ namespace Assets.Scripts.Behaviors
                     if (homePoint != null)
                     {
                         UnityEngine.Debug.Log($"{Unit.Name} идёт домой.");
-                        nextTask = new BrainTask(BrainTaskType.Movement, HexGraph.Graph.GetGraphPoint(homePoint.X, homePoint.Y));
-                        yield return Unit.Brain.CreateTask(nextTask);
+                        nextTask = new BrainTask(BrainTaskType.Movement, HexGraph.Graph.GetGraphPoint(homePoint.X, homePoint.Y), this);
+                        yield return CreateTask(nextTask);
                     }
                     else
                     {

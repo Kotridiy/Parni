@@ -63,7 +63,7 @@ namespace Assets.Scripts.Debug
 
                 pointObj.transform.position = new Vector3(memoryInfo.Point.PosX, memoryInfo.Point.PosY, pointObj.transform.position.z);
 
-                float size = (1 + math.min(memoryInfo.ImportanceLevel, 9)) / 10f;
+                float size = (1 + math.min(memoryInfo.ImportanceLevel, 4)) / 5f;
                 pointObj.transform.localScale = new Vector3(size, size, 1);
 
                 var renderer = pointObj.GetComponentInChildren<SpriteRenderer>();

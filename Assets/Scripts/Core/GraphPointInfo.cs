@@ -1,4 +1,6 @@
-﻿namespace Assets.Scripts.Core
+﻿using UnityEngine;
+
+namespace Assets.Scripts.Core
 {
     public class GraphPointInfo
     {
@@ -6,6 +8,7 @@
         public int Y { get; private set; }
         public float PosX { get; private set; }
         public float PosY { get; private set; }
+        public Vector2 Pos { get => new Vector2(PosX, PosY); } 
 
         public GraphPointInfo(int x, int y, float posX, float posY)
         {

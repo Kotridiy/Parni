@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Core.BehaviorCore
 {
-    public partial class Brain
+    public class Brain
     {
         private const int MAX_DEPTH = 10;
 
@@ -32,7 +32,7 @@ namespace Assets.Scripts.Core.BehaviorCore
         public IEnumerator StartThink()
         {
             Status = BrainStatus.Normal;
-            return CreateTask(new BrainTask(BrainTaskType.Main, null));
+            return CreateTask(new BrainTask(BrainTaskType.Main, null, null));
         }
 
         public IEnumerator CreateTask(BrainTask task)
@@ -79,12 +79,12 @@ namespace Assets.Scripts.Core.BehaviorCore
 
         public bool TryFlee(GraphPoint point, EventHandler callback)
         {
-            return OutterInteract(new BrainTask(BrainTaskType.Movement, point), callback, BrainStatus.Flee);
+            return OutterInteract(new BrainTask(BrainTaskType.Movement, point, null), callback, BrainStatus.Flee);
         }
 
         public void BecameAttacked(GameEntity attacker)
         {
-            OutterInteract(new BrainTask(BrainTaskType.Fight, attacker), null, BrainStatus.Fight);
+            OutterInteract(new BrainTask(BrainTaskType.Fight, attacker, null), null, BrainStatus.Fight);
         }
 
         private bool OutterInteract(BrainTask task, EventHandler callback, BrainStatus status)

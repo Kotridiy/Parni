@@ -1,10 +1,12 @@
 ﻿using Assets.Scripts.Core;
+using System;
 
 namespace Assets.Scripts.Entity
 {
     public class Pepl : GameUnit
     {
-        public override string Name => "Чиловик";
+        public override string Name => "Чиловик " + secondName;
+        private string secondName;
 
         public override string Description => "Базовая еденица людей, способна размножаться, развиватся и менять профессию";
 
@@ -16,7 +18,8 @@ namespace Assets.Scripts.Entity
 
             if (Team.Race != Race.Pepl) throw new System.Exception($"{typeof(Pepl).Name} can't be {Team.Race}!");
 
-            Brain = BrainBuilder.Scout(this);
+            Brain = BrainBuilder.Slave(this);
+            secondName = Guid.NewGuid().ToString().Substring(0, 4).ToUpper();
         }
     }
 }
