@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
-using static UnityEngine.UI.CanvasScaler;
 
 namespace Assets.Scripts.Core
 {
@@ -165,11 +163,18 @@ namespace Assets.Scripts.Core
             return points[indexX, indexY];
         }
 
-        public List<GraphPoint> FindShortestWay(int fromX, int fromY, int toX, int toY) => FindShortestWay((level) => 1, points[fromX, fromY], points[toX, toY]);
-        public List<GraphPoint> FindShortestWay(GraphPoint fromPoint, GraphPoint toPoint) => FindShortestWay((level) => 1, fromPoint, toPoint);
-        public List<GraphPoint> FindShortestWay(Func<EdgeLevel, float> speedFunc, int fromX, int fromY, int toX, int toY) => FindShortestWay(speedFunc, points[fromX, fromY], points[toX, toY]);
+        #region Find Way
+        public List<GraphPoint> FindShortWay(int fromX, int fromY, int toX, int toY) => FindShortWay((level) => 1, points[fromX, fromY], points[toX, toY]);
+        public List<GraphPoint> FindShortWay(GraphPoint fromPoint, GraphPoint toPoint) => FindShortWay((level) => 1, fromPoint, toPoint);
+        public List<GraphPoint> FindShortWay(Func<EdgeLevel, float> speedFunc, int fromX, int fromY, int toX, int toY) => FindShortWay(speedFunc, points[fromX, fromY], points[toX, toY]);
+        public List<GraphPoint> FindShortWay(Func<EdgeLevel, float> speedFunc, GraphPoint fromPoint, GraphPoint toPoint) => FindWay(speedFunc, fromPoint, toPoint);
 
-        public List<GraphPoint> FindShortestWay(Func<EdgeLevel, float> speedFunc, GraphPoint fromPoint, GraphPoint toPoint)
+        public List<GraphPoint> FindSafeWay(int fromX, int fromY, int toX, int toY, Memory memory, float safeCoefficient) => FindSafeWay((level) => 1, points[fromX, fromY], points[toX, toY], memory, safeCoefficient);
+        public List<GraphPoint> FindSafeWay(GraphPoint fromPoint, GraphPoint toPoint, Memory memory, float safeCoefficient) => FindSafeWay((level) => 1, fromPoint, toPoint, memory, safeCoefficient);
+        public List<GraphPoint> FindSafeWay(Func<EdgeLevel, float> speedFunc, int fromX, int fromY, int toX, int toY, Memory memory, float safeCoefficient) => FindSafeWay(speedFunc, points[fromX, fromY], points[toX, toY], memory, safeCoefficient);
+        public List<GraphPoint> FindSafeWay(Func<EdgeLevel, float> speedFunc, GraphPoint fromPoint, GraphPoint toPoint, Memory memory, float safeCoefficient) => FindWay(speedFunc, fromPoint, toPoint, memory, safeCoefficient);
+
+        private List<GraphPoint> FindWay(Func<EdgeLevel, float> speedFunc, GraphPoint fromPoint, GraphPoint toPoint, Memory memory = null, float safeCoefficient = 0)
         {
             List<GraphPoint> visited = new List<GraphPoint>(); // V - коллекция посещённых точек
             List<GraphPoint> candidates = new List<GraphPoint>(); // Q - коллекция потенциальных кандидатов
@@ -194,7 +199,7 @@ namespace Assets.Scripts.Core
                 foreach (var point in neighbours)
                 {
                     var edge = GetGraphEdge(point, current);
-                    var tentativeScore = passed[current] + (edge == null ? 0 : speedFunc(edge.Level));
+                    var tentativeScore = passed[current] + (edge == null ? 0 : speedFunc(edge.Level) + GetDangerScore(memory, safeCoefficient, point));
 
                     if (point == null || edge == null || visited.Contains(point) && tentativeScore >= passed[point]) continue;
                     if (!visited.Contains(point) || tentativeScore < passed[point])
@@ -208,6 +213,16 @@ namespace Assets.Scripts.Core
                 }
             }
             return null;
+        }
+
+        private float GetDangerScore(Memory memory, float safeCoefficient, GraphPoint point)
+        {
+            if (memory != null && memory.TryGetMemory(point.GetInfo(), out var memoryInfo))
+            {
+                return memoryInfo.DangerLevel * safeCoefficient;
+            }
+            else return 0;
+            
         }
 
         private float GetWayEstimate(GraphPoint fromPoint, GraphPoint toPoint) // h(p) - евристика расстояния до цели (манхетенское расстояние)
@@ -227,6 +242,7 @@ namespace Assets.Scripts.Core
             way.Reverse();
             return way;
         }
+        #endregion
 
         public ScanInfo[] ScanPoint(GraphPoint point, int visualRange = 1)
         {

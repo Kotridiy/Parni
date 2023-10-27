@@ -14,7 +14,8 @@ namespace Assets.Scripts.Behaviors
     /// </summary>
     public class SearchBehavior : Behavior
     {
-        public override string ActionName => "Ищет " + target.Name;
+        protected override string ActionName => "Ищет " + target.Name;
+        protected override string ShortName => "Поиск";
 
         private Type target = null;
 
@@ -27,7 +28,7 @@ namespace Assets.Scripts.Behaviors
             return task.TaskType == BrainTaskType.Search && task.TaskBody is Type;
         }
 
-        public override IEnumerator RunTask(BrainTask task)
+        protected override IEnumerator RunTask(BrainTask task)
         {
             target = task.TaskBody as Type;
             while (Unit != null)

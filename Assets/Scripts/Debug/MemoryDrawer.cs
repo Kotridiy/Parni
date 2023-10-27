@@ -10,6 +10,7 @@ namespace Assets.Scripts.Debug
         [SerializeField] GameObject memoryPrefab;
 
         private Memory memory;
+        private GameEntity owner;
 
         private void Start()
         {
@@ -27,12 +28,13 @@ namespace Assets.Scripts.Debug
             if (memory != null) memory.MemoryChanged -= OnDrawMemory;
         }
 
-        public void StartDraw(Memory memory)
+        public void StartDraw(Memory memory, GameEntity owner)
         {
             if (!enabled) return;
             if (this.memory != null) this.memory.MemoryChanged -= OnDrawMemory;
 
             this.memory = memory;
+            this.owner = owner;
             memory.MemoryChanged += OnDrawMemory;
             OnDrawMemory(memory, EventArgs.Empty);
         }
@@ -63,11 +65,12 @@ namespace Assets.Scripts.Debug
 
                 pointObj.transform.position = new Vector3(memoryInfo.Point.PosX, memoryInfo.Point.PosY, pointObj.transform.position.z);
 
-                float size = (1 + math.min(memoryInfo.ImportanceLevel, 4)) / 5f;
+                float size = (5 + math.min(memoryInfo.ImportanceLevel, 20)) / 25f;
                 pointObj.transform.localScale = new Vector3(size, size, 1);
 
                 var renderer = pointObj.GetComponentInChildren<SpriteRenderer>();
-                var safe = 1 - math.min(memoryInfo.DangerLevel, 5) / 5;
+                var maxSafeFactor = 5 * owner.GetDunger();
+                var safe = 1 - math.min(memoryInfo.DangerLevel, maxSafeFactor) / maxSafeFactor;
                 renderer.color = new Color(1, safe, safe);
 
             }

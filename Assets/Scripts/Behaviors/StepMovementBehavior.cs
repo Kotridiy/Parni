@@ -9,12 +9,13 @@ namespace Assets.Scripts.Behaviors
     /// <summary>
     /// Решает задачи типа "Movement" с объектом типа Point
     /// Делает один шаг в направлении к точке по кратчайшему маршруту
+    /// safeCoefficient заставляет выбирать более безопасный маршрут
     /// </summary>
     public class StepMovementBehavior : MovementBehavior
     {
         private List<GraphPoint> way;
 
-        public StepMovementBehavior(GameUnit unit) : base(unit)
+        public StepMovementBehavior(GameUnit unit, float safeCoefficient = 0) : base(unit, safeCoefficient)
         {
         }
 
@@ -23,7 +24,7 @@ namespace Assets.Scripts.Behaviors
             return base.CanRunTask(task) && task.Behavior is SeekBehavior;
         }
 
-        public override IEnumerator RunTask(BrainTask task)
+        protected override IEnumerator RunTask(BrainTask task)
         {
             var destination = task.TaskBody as GraphPoint;
             if (destination == null)
@@ -39,7 +40,7 @@ namespace Assets.Scripts.Behaviors
             if (destination != Unit.Point)
             {
                 movingTarget = destination;
-                way = HexGraph.Graph.FindShortestWay(GetRoadSpeed, Unit.Point, destination);
+                way = GetWay();
                 if (way != null)
                 {
                     var point = way[1];

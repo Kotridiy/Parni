@@ -45,10 +45,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bf71f28d44fb074cae638066932f92a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  VisualRange: 1
   ScanInterval: 1
-  MemoryVolume: 10
   spriteController: {fileID: 3439562344911086395}
+  startingStats: {fileID: 11400000, guid: 831541f8fd07ae447a34931aea53bed7, type: 2}
 --- !u!1 &2991110736047698343
 GameObject:
   m_ObjectHideFlags: 0

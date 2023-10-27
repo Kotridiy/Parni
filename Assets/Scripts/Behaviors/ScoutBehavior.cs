@@ -16,14 +16,15 @@ namespace Assets.Scripts.Behaviors
         {
         }
 
-        public override string ActionName => "Рыскает вокруг";
+        protected override string ActionName => "Рыскает вокруг";
+        protected override string ShortName => "Рысканье";
 
         public override bool CanRunTask(BrainTask task)
         {
             return task.TaskType == BrainTaskType.Main;
         }
 
-        public override IEnumerator RunTask(BrainTask task)
+        protected override IEnumerator RunTask(BrainTask task)
         {
             UnityEngine.Debug.Log($"{Unit.Name} обыскивает местность.");
             int movements = 0;

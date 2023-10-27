@@ -86,7 +86,7 @@ namespace Assets.Scripts
             {
                 SystemInfoText.ChangeInfoText(entity.Info);
                 captured = entity;
-                memoryDrawer.StartDraw(entity.Memory);
+                memoryDrawer.StartDraw(entity.Memory, entity);
             }
             else 
             { 

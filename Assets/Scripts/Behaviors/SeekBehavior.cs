@@ -13,7 +13,8 @@ namespace Assets.Scripts.Behaviors
     /// </summary>
     public class SeekBehavior : Behavior
     {
-        public override string ActionName => "Преследую " + target.Name;
+        protected override string ActionName => "Преследую " + target.Name;
+        protected override string ShortName => "Преследование";
 
         protected GameUnit target;
 
@@ -26,7 +27,7 @@ namespace Assets.Scripts.Behaviors
             return task.TaskType == BrainTaskType.Movement && task.TaskBody is GameUnit;
         }
 
-        public override IEnumerator RunTask(BrainTask task)
+        protected override IEnumerator RunTask(BrainTask task)
         {
             target = task.TaskBody as GameUnit;
             while (Unit != null && target != null && !HexGraph.Graph.IsNear(Unit, target))

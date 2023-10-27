@@ -9,9 +9,9 @@ namespace Assets.Scripts.Core
     public class Memory
     {
         public const float MAX_STORAGE_TIME = 100;
-        public const float MAX_VISITS_COUNT = 50;
+        public const float BASE_IMPORTANCE = 5;
 
-        private Team ownerTeam;
+        private GameEntity owner;
         private int memoryVolume;
 
         private Func<MemoryInfo, float> calculateDangerFunc;
@@ -31,9 +31,9 @@ namespace Assets.Scripts.Core
 
         public List<MemoryInfo> Memories { get; private set; }
 
-        public Memory(Team team, int memoryVolume, Func<MemoryInfo, float> calculateDangerFunc = null, Func<MemoryInfo, float> calculateImportanceFunc = null)
+        public Memory(GameEntity owner, int memoryVolume, Func<MemoryInfo, float> calculateDangerFunc = null, Func<MemoryInfo, float> calculateImportanceFunc = null)
         {
-            ownerTeam = team;
+            this.owner = owner;
             MemoryVolume = memoryVolume;
             Memories = new List<MemoryInfo>();
             this.calculateDangerFunc = calculateDangerFunc;
@@ -49,18 +49,39 @@ namespace Assets.Scripts.Core
             return false;
         }
 
-        public bool TryGetMemoryPosition(GameEntity entity, out GraphPointInfo position)
+        public bool TryGetMemory(GameEntity entity, out MemoryInfo memory)
         {
             foreach (var memoryInfo in Memories)
             {
                 if (memoryInfo.Entities.Any(e => e == entity))
                 {
-                    position = memoryInfo.Point;
+                    memory = memoryInfo;
                     return true;
                 }
             }
-            position = null;
+            memory = null;
             return false;
+        }
+
+        public bool TryGetMemory(GraphPointInfo point, out MemoryInfo memory)
+        {
+            foreach (var memoryInfo in Memories)
+            {
+                if (memoryInfo.Point == point)
+                {
+                    memory = memoryInfo;
+                    return true;
+                }
+            }
+            memory = null;
+            return false;
+        }
+
+        public bool TryGetMemoryPosition(GameEntity entity, out GraphPointInfo position)
+        {
+            var ans = TryGetMemory(entity, out var memory);
+            position = ans ? memory.Point : null;
+            return ans;
         }
 
         public void LoadInfo(IEnumerable<ScanInfo> infos)
@@ -116,8 +137,8 @@ namespace Assets.Scripts.Core
                     var pointA = Memories[i].Point;
                     var pointB = Memories[j].Point;
                     if (HexGraph.Graph.GetGraphEdge(pointA.X, pointA.Y, pointB.X, pointB.Y) == null) continue;
-                    memoriesCopy[i].DangerLevel += Memories[j].DangerLevel;
-                    memoriesCopy[j].DangerLevel += Memories[i].DangerLevel;
+                    memoriesCopy[i].DangerLevel += Memories[j].DangerLevel / 2;
+                    memoriesCopy[j].DangerLevel += Memories[i].DangerLevel / 2;
                 }
             }
             Memories = memoriesCopy;
@@ -139,16 +160,15 @@ namespace Assets.Scripts.Core
 
         private float CalculateDanger(MemoryInfo memory)
         {
-            return memory.Entities.Aggregate(0f, (danger, entity) => entity.Team.IsEnemy(ownerTeam) ? danger + entity.GetDunger() : danger);
+            return memory.Entities.Aggregate(0f, (danger, entity) => entity.Team.IsEnemy(owner.Team) ? danger + entity.GetDunger() : danger);
         }
 
         private float CalculateImportance(MemoryInfo memory)
         {
             float timeMultiplier = math.sqrt(1 - math.min(Time.time - memory.LastUpdate, MAX_STORAGE_TIME - 1) / MAX_STORAGE_TIME);
-            float visitsMultiplier = math.sqrt(math.min(memory.VisitCount, MAX_VISITS_COUNT) / MAX_VISITS_COUNT);
             float placeValue = memory.Entities.Length == 0 ? 0 : 
-                memory.Entities.Max(e => !e.Team.IsEnemy(ownerTeam) && e is GamePlace place ? place.GetImportance() : 0);
-            return timeMultiplier * visitsMultiplier * (1 + memory.DangerLevel + placeValue);
+                memory.Entities.Max(e => !e.Team.IsEnemy(owner.Team) && e is GamePlace place ? place.GetImportance() : 0);
+            return timeMultiplier  * (BASE_IMPORTANCE + memory.DangerLevel + placeValue);
         }
     }
 
@@ -156,7 +176,6 @@ namespace Assets.Scripts.Core
     {
         public GraphPointInfo Point { get; private set; }
         public GameEntity[] Entities { get; private set; }
-        public int VisitCount { get; private set; }
         public float LastUpdate { get; private set; }
 
         public float DangerLevel { get; set; }
@@ -166,7 +185,6 @@ namespace Assets.Scripts.Core
         {
             Point = memory.Point;
             Entities = memory.Entities;
-            VisitCount = memory.VisitCount;
             LastUpdate = memory.LastUpdate;
             DangerLevel = memory.DangerLevel;
             ImportanceLevel = memory.ImportanceLevel;
@@ -178,7 +196,6 @@ namespace Assets.Scripts.Core
 
             Point = info.Point;
             Entities = info.Entities.ToArray();
-            VisitCount = 1;
             LastUpdate = Time.time;
             DangerLevel = 0;
             ImportanceLevel = 0;
@@ -190,7 +207,6 @@ namespace Assets.Scripts.Core
                 throw new ArgumentException($"Wrong scan info! {info.Point} vs {Point}");
 
             Entities = info.Entities.ToArray();
-            VisitCount++;
             LastUpdate = Time.time;
         }
 

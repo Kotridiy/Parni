@@ -43,7 +43,7 @@ namespace Assets.Scripts.Core.BehaviorCore
                 {
                     yield return RunTask(task, behavior);
                     yield break;
-                }    
+                }
             }
 
             yield return new WaitForSeconds(5);
@@ -61,7 +61,7 @@ namespace Assets.Scripts.Core.BehaviorCore
             var previousBehavior = ActiveBehavior;
             ActiveBehavior = behavior;
 
-            yield return behavior.RunTask(task);
+            yield return behavior.StartTask(task);
 
             ActiveBehavior = previousBehavior;
             tasksDepth--;
@@ -104,7 +104,10 @@ namespace Assets.Scripts.Core.BehaviorCore
             yield return CreateTask(awaiterTask);
 
             Status = BrainStatus.Normal;
-            awaiterCallback(unit, new EventArgs());
+            if (awaiterCallback != null)
+            {
+                awaiterCallback(unit, new EventArgs());
+            }
         }
     }
 

@@ -8,10 +8,13 @@ namespace Assets.Scripts.Behaviors
     /// <summary>
     /// Решает задачи типа "Fight" с объектом типа GameEntity
     /// Наносит урон цели, пока та в зоне досягаемости
+    /// range определяет дальность атаки, где 1 = длина дороги
+    /// cooldown определяет время между атаками
     /// </summary>
     public class AttackBehavior : Behavior
     {
-        public override string ActionName => "Атакую " + target.Name;
+        protected override string ActionName => "Атакую " + target.Name;
+        protected override string ShortName => "Атака";
 
         private float range;
         private float cooldown;
@@ -29,13 +32,13 @@ namespace Assets.Scripts.Behaviors
                 HexGraph.Graph.IsInRange(Unit.transform.position, entity.transform.position, range);
         }
 
-        public override IEnumerator RunTask(BrainTask task)
+        protected override IEnumerator RunTask(BrainTask task)
         {
             Unit.Brain.Status = BrainStatus.Fight;
             target = task.TaskBody as GameEntity;
             while (Unit != null && target != null && HexGraph.Graph.IsInRange(Unit.transform.position, target.transform.position, range) && target.Health > 0)
             {
-                target.BecameAttacked(Unit, Unit.GetDunger());
+                target.Attack(Unit, Unit.Stats.Damage);
                 yield return new WaitForSeconds(cooldown);
             }
             yield return null;

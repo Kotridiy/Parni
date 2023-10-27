@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -7,6 +7,12 @@ namespace Assets.Scripts.Core
     [RequireComponent(typeof(SpriteRenderer))]
     public abstract class GamePlace : GameEntity
     {
+        [SerializeField] protected int maxHealth;
+        protected float health;
+
+        public override int MaxHealth => maxHealth;
+        public override float Health => health;
+
         public override void Initialization(GraphPoint point, Team team)
         {
             if (point.GamePlace != null)
@@ -16,17 +22,17 @@ namespace Assets.Scripts.Core
             point.GamePlace = this;
 
             Team = team;
-            Memory = new Memory(team, 100); // TODO
-            MaxHealth = MaxHealth > 0 ? MaxHealth : 100;
-            Health = MaxHealth;
+            Memory = new Memory(this, 100); // TODO
+            maxHealth = maxHealth > 0 ? maxHealth : 100;
+            health = maxHealth;
         }
 
-        public override void BecameAttacked(GameEntity attacker, float damage)
+        public override void Attack(GameEntity attacker, float damage)
         {
-            Health -= damage;
+            health -= damage;
             if (Health <= 0)
             {
-                Health = 0;
+                health = 0;
                 Destroy(gameObject);
             }
         }
@@ -53,13 +59,13 @@ namespace Assets.Scripts.Core
         // Для врагов
         public override float GetDunger()
         {
-            return 50; // TODO-
+            return Point.GetUnits().Sum(u => u.GetDunger()) + Health;
         }
 
         // Для друзей
         public virtual float GetImportance()
         {
-            return 50;
+            return 50; //TODO
         }
     }
 }

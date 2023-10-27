@@ -35,9 +35,9 @@ namespace Assets.Scripts
             {
                 new BullyBehavior(unit),
                 new SearchBehavior(unit),
-                new AgressiveSeekBehavior(unit),
-                new StepMovementBehavior(unit),
-                new MovementBehavior(unit),
+                new AgressiveSeekBehavior(unit, true),
+                new StepMovementBehavior(unit, 0.2f),
+                new MovementBehavior(unit, 1),
                 new AttackBehavior(unit),
             };
 

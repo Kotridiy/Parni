@@ -2,10 +2,9 @@
 using Assets.Scripts.Core.BehaviorCore;
 using Assets.Scripts.Entity;
 using System.Collections;
-using System.Drawing;
 using System.Linq;
 using UnityEngine;
-using static UnityEngine.EventSystems.EventTrigger;
+using UnityEngine.Rendering;
 
 namespace Assets.Scripts.Behaviors
 {
@@ -15,7 +14,8 @@ namespace Assets.Scripts.Behaviors
     /// </summary>
     public class BullyBehavior : Behavior
     {
-        public override string ActionName => "Терроризирует население";
+        protected override string ActionName => "Терроризирует население";
+        protected override string ShortName => "Террор";
 
         public BullyBehavior(GameUnit unit) : base(unit)
         {
@@ -26,12 +26,17 @@ namespace Assets.Scripts.Behaviors
             return task.TaskType == BrainTaskType.Main;
         }
 
-        public override IEnumerator RunTask(BrainTask task)
+        protected override IEnumerator RunTask(BrainTask task)
         {
             UnityEngine.Debug.Log($"{Unit.Name} ищет кого бы побить.");
             GameUnit target = null;
             while (Unit != null)
             {
+                if (!Unit.Memory.TryGetMemoryPosition(target, out _))
+                {
+                    target = null;
+                }
+
                 if (target == null)
                 {
                     Unit.Scan(true);
@@ -51,15 +56,19 @@ namespace Assets.Scripts.Behaviors
                         yield return CreateTask(BrainTaskType.Movement, target);
                     }
 
-                    yield return CreateTask(BrainTaskType.Fight, target);
-                    target = null;
+                    if (HexGraph.Graph.IsInRange(target.transform.position, Unit.transform.position))
+                    {
+                        yield return CreateTask(BrainTaskType.Fight, target);
+                    }
+
+                    if (target == null || target.Health <= 0) target = null; // GameObject can be "null", but not null
                 }
             }
         }
 
-        private MemoryInfo GetCloserEnemy (MemoryInfo current, MemoryInfo next)
+        private MemoryInfo GetCloserEnemy(MemoryInfo current, MemoryInfo next)
         {
-            if (next.Entities.Any(e => e is Pepl) &&
+            if (next.DangerLevel <= Unit.GetDunger() && next.Entities.Any(e => e is Pepl) &&
                 Vector2.Distance(next.Point.Pos, (Vector2)Unit.transform.position) < Vector2.Distance(current.Point.Pos, (Vector2)Unit.transform.position))
             {
                 return next;

@@ -7,19 +7,21 @@ namespace Assets.Scripts.Entity
 {
     public class Dimn : GameUnit
     {
+        [SerializeField] private UnitStatsSheet startingStats;
+
         public override string Name => "Димн";
 
         public override string Description => "Базовый демон, ходит и ест всё подряд";
-
-        public override float Power => 3;
 
         public override void Initialization(GraphPoint point, Team team)
         {
             base.Initialization(point, team);
 
             if (Team.Race != Race.Dimn) throw new System.Exception($"{typeof(Dimn).Name} can't be {Team.Race}!");
+
+            Stats = new UnitStats(startingStats);
             Brain = BrainBuilder.Bully(this);
-            Memory = new Memory(Team, MemoryVolume, null, CalculateImportance);
+            Memory = new Memory(this, Stats.MemoryVolume, null, CalculateImportance);
         }
 
         private float CalculateImportance(MemoryInfo memory)

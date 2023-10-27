@@ -2,6 +2,7 @@
 using Assets.Scripts.Core.BehaviorCore;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts.Behaviors
@@ -9,23 +10,29 @@ namespace Assets.Scripts.Behaviors
     /// <summary>
     /// Решает задачи типа "Movement" с объектом типа Point
     /// Идёт к точке по кратчайшему маршруту
+    /// safeCoefficient заставляет выбирать более безопасный маршрут
     /// </summary>
     public class MovementBehavior : Behavior
     {
         private const float TIME_FACTOR = 1f;
 
         protected GraphPoint movingTarget;
+        protected float safeCoefficient;
 
-        public override string ActionName => movingTarget != null ? string.Format($"Идёт к {movingTarget}") : "Движение";
+        protected override string ActionName => "Идёт к " + movingTarget;
+        protected override string ShortName => "Движение";
 
-        public MovementBehavior(GameUnit unit) : base(unit) { }
+        public MovementBehavior(GameUnit unit, float safeCoefficient = 0) : base(unit)
+        {
+            this.safeCoefficient = safeCoefficient;
+        } 
 
         public override bool CanRunTask(BrainTask task)
         {
             return task.TaskType == BrainTaskType.Movement && task.TaskBody is GraphPoint;
         }
 
-        public override IEnumerator RunTask(BrainTask task)
+        protected override IEnumerator RunTask(BrainTask task)
         {
             var destination = task.TaskBody as GraphPoint;
             if (destination == null)
@@ -34,7 +41,7 @@ namespace Assets.Scripts.Behaviors
             if (destination != Unit.Point)
             {
                 movingTarget = destination;
-                var way = HexGraph.Graph.FindShortestWay(GetRoadSpeed, Unit.Point, destination);
+                var way = GetWay();
                 if (way != null)
                 {
                     foreach (var point in way)
@@ -47,6 +54,12 @@ namespace Assets.Scripts.Behaviors
                 }
                 movingTarget = null;
             }
+        }
+
+        protected virtual List<GraphPoint> GetWay()
+        {
+            if (safeCoefficient > 0) return HexGraph.Graph.FindSafeWay(GetRoadSpeed, Unit.Point, movingTarget, Unit.Memory, safeCoefficient);
+            else return HexGraph.Graph.FindShortWay(GetRoadSpeed, Unit.Point, movingTarget);
         }
 
         protected IEnumerator MovingToNextPoint(GraphPoint point)
@@ -91,5 +104,7 @@ namespace Assets.Scripts.Behaviors
                     return 2;
             }
         }
+
+        
     }
 }
